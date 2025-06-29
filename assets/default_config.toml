@@ -1,3 +1,8 @@
-[tokens]
-discord = "BOT_TOKEN"
-lib_sql = "TURSO_TOKEN"
+[discord]
+token = "BOT_TOKEN"
+# Avaliable options are {uuid} {player} {message}
+chat_format = "{player} » {message}"
+
+[lib_sql]
+remote = false
+token = "TURSO_TOKEN"

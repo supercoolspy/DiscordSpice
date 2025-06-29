@@ -16,13 +16,20 @@ pub enum MinecraftError {
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-    pub(crate) tokens: Tokens,
+    pub(crate) discord: DiscordConfig,
+    pub(crate) lib_sql: LibSQL,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct Tokens {
-    pub(crate) discord: String,
-    pub(crate) lib_sql: String,
+pub struct DiscordConfig {
+    pub(crate) token: String,
+    pub(crate) chat_format: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct LibSQL {
+    pub(crate) remote: bool,
+    pub(crate) token: String,
 }
 
 pub(super) async fn init_config(config_file_path: PathBuf) -> Result<Config, MinecraftError> {
