@@ -5,10 +5,8 @@ use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::{ChannelId, CreateMessage, Http};
 use pumpkin::entity::player::Player;
 use pumpkin::{plugin::Context, server::Server};
-use pumpkin_api_macros::with_runtime;
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
-use strfmt::strfmt;
 use thiserror::Error;
 use tokio::sync::mpsc::UnboundedSender;
 

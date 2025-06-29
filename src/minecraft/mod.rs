@@ -1,4 +1,3 @@
-use pumpkin::plugin::Context;
 use pumpkin::server::Server;
 use pumpkin_util::text::TextComponent;
 use serde::{Deserialize, Serialize};
@@ -7,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::fs::File;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::AsyncWriteExt;
 
 #[derive(Error, Debug)]
 pub enum MinecraftError {
