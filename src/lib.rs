@@ -11,6 +11,8 @@ use pumpkin_api_macros::with_runtime;
 use pumpkin_api_macros::{plugin_impl, plugin_method};
 use std::sync::Arc;
 use tokio::sync::OnceCell;
+use pumpkin::plugin::Context;
+use pumpkin::plugin::EventPriority;
 
 type ClonableArcSwap<T> = Arc<ArcSwap<T>>;
 

@@ -7,14 +7,17 @@ use pumpkin::entity::player::Player;
 use pumpkin::{plugin::Context, server::Server};
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
+use pumpkin_api_macros::with_runtime;
 use strfmt::strfmt;
 use thiserror::Error;
+use tokio::sync::mpsc::UnboundedSender;
 
 /// State for the Discord Bot
 pub(crate) struct DiscordState {
     server: Arc<Server>,
     config: Arc<ArcSwap<Config>>,
     http: OnceLock<Arc<Http>>,
+    sender: UnboundedSender<SendMessageInfo>
 }
 
 /// Info for messages being sent to the discord as if they were sent by a player
@@ -53,10 +56,13 @@ impl DiscordState {
 
         let server = mc_ctx.server.clone();
 
+        let (message_sender, mut message_receiver) = tokio::sync::mpsc::unbounded_channel();
+
         let state = Arc::new(ArcSwap::new(Arc::new(DiscordState {
             server,
             config,
             http: OnceLock::new(),
+            sender: message_sender
         })));
 
         let dc_state = state.clone();
@@ -84,6 +90,23 @@ impl DiscordState {
 
         client.start().await?;
 
+        let msg_state = state.clone();
+        
+        tokio::spawn(async move {
+            while let Some(message_info) = message_receiver.recv().await {
+                let res = msg_state.load().send_message(
+                    message_info.player,
+                    message_info.channel,
+                    message_info.message
+                ).await;
+
+                if res.is_err() {
+                    log::error!("Failed to parse message to discord from channel! {}", res.err().unwrap());
+                    continue
+                }
+            }
+        });
+
         log::info!("Started discord bot");
 
         Ok(state)
@@ -106,9 +129,9 @@ impl DiscordState {
         let mut vars = HashMap::new();
         
         // Add vars to replace
-        vars.insert("uuid", profile.id.to_string());
-        vars.insert("name", profile.name);
-        vars.insert("message", message);
+        vars.insert("uuid".to_string(), profile.id.to_string());
+        vars.insert("name".to_string(), profile.name);
+        vars.insert("message".to_string(), message);
 
         let message_content = strfmt::strfmt(&discord_config.chat_format, &vars)?;
 
