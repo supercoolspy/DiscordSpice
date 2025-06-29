@@ -17,6 +17,9 @@ pub(crate) struct DiscordState {
 pub enum DiscordError {
     #[error("Serenity Error")]
     Serenity(#[from] serenity::Error),
+    
+    #[error("Discord Token Not Set")]
+    DefaultToken
 }
 
 impl DiscordState {
@@ -27,6 +30,11 @@ impl DiscordState {
         log::debug!("Starting discord bot");
         
         let token = &config.load_full().tokens.discord;
+        
+        if token.trim().is_empty() || token == "BOT_TOKEN" {
+            return Err(DiscordError::DefaultToken)
+        }
+        
         let intents = serenity::GatewayIntents::all();
 
         let server = mc_ctx.server.clone();
