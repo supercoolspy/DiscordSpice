@@ -1,0 +1,3 @@
+[tokens]
+discord = "BOT_TOKEN"
+lib_sql = "TURSO_TOKEN"
