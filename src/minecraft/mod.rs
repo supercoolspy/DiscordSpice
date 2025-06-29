@@ -1,6 +1,10 @@
 use pumpkin::plugin::Context;
+use pumpkin::server::Server;
+use pumpkin_util::text::TextComponent;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 use thiserror::Error;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -24,6 +28,7 @@ pub struct Config {
 pub struct DiscordConfig {
     pub(crate) token: String,
     pub(crate) chat_format: String,
+    pub(crate) chat_channels: HashMap<String, u64>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -47,4 +52,26 @@ pub(super) async fn get_config(config_path: PathBuf) -> Result<Config, Minecraft
     let config: Config = toml::from_str(&tokio::fs::read_to_string(config_path).await?)?;
 
     Ok(config)
+}
+
+pub(crate) async fn send_message(
+    server: Arc<Server>,
+    name: String,
+    role_name: String,
+    message: String,
+) -> Result<(), MinecraftError> {
+    server
+        .broadcast_message(
+            &TextComponent::chat_decorated(
+                format!("[{} {{DISPLAY_NAME}} {{MESSAGE}}", role_name),
+                name,
+                message,
+            ),
+            &TextComponent::text(""),
+            0,
+            None,
+        )
+        .await;
+
+    Ok(())
 }

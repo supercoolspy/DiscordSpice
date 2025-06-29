@@ -5,9 +5,9 @@ use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::{ChannelId, CreateMessage, Http};
 use pumpkin::entity::player::Player;
 use pumpkin::{plugin::Context, server::Server};
+use pumpkin_api_macros::with_runtime;
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
-use pumpkin_api_macros::with_runtime;
 use strfmt::strfmt;
 use thiserror::Error;
 use tokio::sync::mpsc::UnboundedSender;
@@ -15,9 +15,9 @@ use tokio::sync::mpsc::UnboundedSender;
 /// State for the Discord Bot
 pub(crate) struct DiscordState {
     server: Arc<Server>,
-    config: Arc<ArcSwap<Config>>,
+    pub(crate) config: Arc<ArcSwap<Config>>,
     http: OnceLock<Arc<Http>>,
-    sender: UnboundedSender<SendMessageInfo>
+    pub sender: UnboundedSender<SendMessageInfo>,
 }
 
 /// Info for messages being sent to the discord as if they were sent by a player
@@ -25,6 +25,16 @@ pub struct SendMessageInfo {
     player: Arc<Player>,
     channel: ChannelId,
     message: String,
+}
+
+impl SendMessageInfo {
+    pub(crate) fn new(player: Arc<Player>, channel: ChannelId, message: String) -> Self {
+        SendMessageInfo {
+            player,
+            channel,
+            message,
+        }
+    }
 }
 
 #[derive(Error, Debug)]
@@ -62,7 +72,7 @@ impl DiscordState {
             server,
             config,
             http: OnceLock::new(),
-            sender: message_sender
+            sender: message_sender,
         })));
 
         let dc_state = state.clone();
@@ -91,18 +101,24 @@ impl DiscordState {
         client.start().await?;
 
         let msg_state = state.clone();
-        
+
         tokio::spawn(async move {
             while let Some(message_info) = message_receiver.recv().await {
-                let res = msg_state.load().send_message(
-                    message_info.player,
-                    message_info.channel,
-                    message_info.message
-                ).await;
+                let res = msg_state
+                    .load()
+                    .send_message(
+                        message_info.player,
+                        message_info.channel,
+                        message_info.message,
+                    )
+                    .await;
 
                 if res.is_err() {
-                    log::error!("Failed to parse message to discord from channel! {}", res.err().unwrap());
-                    continue
+                    log::error!(
+                        "Failed to parse message to discord from channel! {}",
+                        res.err().unwrap()
+                    );
+                    continue;
                 }
             }
         });
@@ -127,7 +143,7 @@ impl DiscordState {
         let profile = player.gameprofile.clone();
 
         let mut vars = HashMap::new();
-        
+
         // Add vars to replace
         vars.insert("uuid".to_string(), profile.id.to_string());
         vars.insert("name".to_string(), profile.name);

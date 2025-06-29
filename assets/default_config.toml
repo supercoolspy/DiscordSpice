@@ -2,6 +2,7 @@
 token = "BOT_TOKEN"
 # Avaliable options are {uuid} {player} {message}
 chat_format = "{player} » {message}"
+chat_channels = {"global" = 0}
 
 [lib_sql]
 remote = false
