@@ -25,6 +25,7 @@ serde = "1.0"
 toml = "0.8.23"
 arc-swap = "1.7.1"
 poise = "0.6.1"
+strfmt = "0.2.4"
 
 [profile.release]
 lto = true

@@ -6,10 +6,7 @@ use crate::minecraft::Config;
 use arc_swap::ArcSwap;
 use async_trait::async_trait;
 use pumpkin::plugin::player::player_chat::PlayerChatEvent;
-use pumpkin::{
-    plugin::EventHandler,
-    server::Server,
-};
+use pumpkin::{plugin::EventHandler, server::Server};
 use pumpkin_api_macros::with_runtime;
 use pumpkin_api_macros::{plugin_impl, plugin_method};
 use std::sync::Arc;
